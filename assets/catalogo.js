@@ -1,1 +1,9 @@
+const extras=[
+{slug:'o-caibalion',title:'O Caibalion',author:'Os Três Iniciados',category:'filosofia'},
+{slug:'fundamentacao-da-metafisica-dos-costumes',title:'Fundamentação da Metafísica dos Costumes',author:'Immanuel Kant',category:'filosofia'},
+{slug:'bauhausbucher',title:'Bauhausbücher: os 14 livros da Bauhaus',author:'Tiago Sillos Padovani',category:'arte',cover:'/assets/capas/bauhausbucher.jpg'},
+{slug:'kandinsky-para-impacientes',title:'Kandinsky para Impacientes',author:'Tiago Sillos Padovani',category:'arte'}
+];
+const grid=document.querySelector('.cover-grid');
+if(grid){extras.forEach(b=>{if(document.querySelector(`a[href="/livros/${b.slug}/"]`))return;const a=document.createElement('a');a.className='book-card';a.dataset.category=b.category;a.href=`/livros/${b.slug}/`;const cover=b.cover?`<div class="cover-wrap"><img alt="Capa de ${b.title}" loading="lazy" src="${b.cover}"/></div>`:`<div class="cover-wrap"><div style="aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;padding:1rem;border:1px solid #ccc;text-align:center"><strong>${b.title}</strong></div></div>`;a.innerHTML=`${cover}<div class="meta"><div class="tagline">${b.category==='arte'?'Arte e estética':'Filosofia'}</div><h3>${b.title}</h3><div class="author">${b.author}</div></div>`;grid.appendChild(a);});}
 document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const f=btn.dataset.filter;document.querySelectorAll('[data-category]').forEach(card=>{card.style.display=(f==='todos'||card.dataset.category===f)?'flex':'none'});}));
