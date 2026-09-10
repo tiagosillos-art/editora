@@ -33,6 +33,7 @@ by_slug={b['slug']:b for b in books}
 
 for b in books:
     if b.get('cover'): b['cover']='/'+b['cover'].replace('/editora/','/').lstrip('/')
+    b['play']=''
 (ROOT/'data/livros.json').write_text(json.dumps(books,ensure_ascii=False,indent=2),encoding='utf-8')
 
 def canon(rel):
@@ -76,7 +77,6 @@ def apply_affiliate_link(soup,book):
     btn['href']=url
     btn['rel']='sponsored noopener'
     btn['target']='_blank'
-    # Uma única divulgação por página, mesmo após novas execuções do workflow.
     old=soup.select_one('.amazon-associate-disclosure')
     if not old:
         stores=btn.find_parent(class_='stores')
@@ -98,6 +98,9 @@ for p in sorted(ROOT.rglob('index.html')):
     text=text.replace('<a href="/">Galeria</a>',f'<a href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
     soup=BeautifulSoup(text,'html.parser')
     if not soup.head: continue
+    for a in list(soup.find_all('a',href=True)):
+        if 'play.google.com/store/books' in a.get('href',''):
+            a.decompose()
     c=canon(rel); k=kind(rel); title=soup.title.get_text(strip=True) if soup.title else SITE
     d=soup.find('meta',attrs={'name':'description'}); desc=d.get('content','').strip() if d else ''
     if not desc: desc='Editora independente dedicada à arte abstrata, estética e vanguardas modernas.'
@@ -131,7 +134,7 @@ for p in sorted(ROOT.rglob('index.html')):
         bs={'@type':'Book','@id':c+'#book','name':book['title'],'url':c,'image':img,'author':aa if len(aa)>1 else aa[0],'translator':{'@type':'Person','name':EDITOR},'publisher':{'@id':BASE+'/#organization'},'inLanguage':'pt-BR'}
         if book.get('subtitle'): bs['alternativeHeadline']=book['subtitle']
         if str(book.get('pages','')).isdigit(): bs['numberOfPages']=int(book['pages'])
-        same=[u for u in [book.get('amazon'),book.get('play')] if u]
+        same=[u for u in [book.get('amazon')] if u]
         if same: bs['sameAs']=same
         if book.get('series'): bs['isPartOf']={'@type':'BookSeries','name':book['series']}
         if book.get('subjects'): bs['keywords']=book['subjects']
@@ -150,4 +153,4 @@ xml.append('</urlset>')
 
 shutil.rmtree(ROOT/'editora',ignore_errors=True); (ROOT/'editora').mkdir()
 (ROOT/'editora/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
-print(f'SEO e links de associado aplicados em {len(pages)} páginas.')
+print(f'SEO, links de associado e limpeza do Google Play aplicados em {len(pages)} páginas.')
