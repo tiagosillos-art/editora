@@ -8,6 +8,7 @@ INSTAGRAM='https://www.instagram.com/tiagosillos.art/'
 SITE='Tiago Sillos Art'
 EDITOR='Tiago Sillos Padovani'
 ASSOCIATE_TAG='tiagosillosar-20'
+GA_MEASUREMENT_ID='G-EYGB2RVCFD'
 
 # Links completos gerados no SiteStripe. Mantemos o ASIN canônico nos dados/Schema
 # e usamos estes URLs somente nos botões de saída para a Amazon.
@@ -56,6 +57,35 @@ def meta(soup,**a):
     soup.head.append(t)
 
 def link(soup,rel,href): soup.head.append(soup.new_tag('link',rel=rel,href=href))
+
+def apply_ga(soup):
+    # Remove versões anteriores para manter a instalação idempotente.
+    for t in list(soup.find_all('script')):
+        src=t.get('src','')
+        body=t.string or ''
+        if 'googletagmanager.com/gtag/js' in src or 'GA_MEASUREMENT_ID' in body or "gtag('config'" in body:
+            t.decompose()
+    loader=soup.new_tag('script',src=f'https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}')
+    loader['async']=''
+    soup.head.append(loader)
+    tag=soup.new_tag('script')
+    tag.string=f"""window.dataLayer = window.dataLayer || [];
+function gtag(){{dataLayer.push(arguments);}}
+gtag('js', new Date());
+gtag('config', '{GA_MEASUREMENT_ID}');
+
+document.addEventListener('DOMContentLoaded', function() {{
+  document.querySelectorAll('a[href*="amazon."]').forEach(function(a) {{
+    a.addEventListener('click', function() {{
+      gtag('event', 'amazon_click', {{
+        link_url: a.href,
+        link_text: (a.textContent || '').trim(),
+        page_path: location.pathname
+      }});
+    }});
+  }});
+}});"""
+    soup.head.append(tag)
 def jsonld(soup,obj):
     t=soup.new_tag('script',type='application/ld+json'); t.string=json.dumps(obj,ensure_ascii=False,separators=(',',':')); soup.head.append(t)
 
@@ -98,6 +128,7 @@ for p in sorted(ROOT.rglob('index.html')):
     text=text.replace('<a href="/">Galeria</a>',f'<a href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
     soup=BeautifulSoup(text,'html.parser')
     if not soup.head: continue
+    apply_ga(soup)
     for a in list(soup.find_all('a',href=True)):
         if 'play.google.com/store/books' in a.get('href',''):
             a.decompose()
@@ -153,4 +184,7 @@ xml.append('</urlset>')
 
 shutil.rmtree(ROOT/'editora',ignore_errors=True); (ROOT/'editora').mkdir()
 (ROOT/'editora/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
+
+shutil.rmtree(ROOT/'site_links',ignore_errors=True); (ROOT/'site_links').mkdir()
+(ROOT/'site_links/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
 print(f'SEO, links de associado e limpeza do Google Play aplicados em {len(pages)} páginas.')
