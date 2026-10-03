@@ -1,0 +1,23 @@
+name: Export full site backup
+
+on:
+  push:
+    branches: [backup-export]
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create backup archive
+        run: |
+          zip -r tiagosillos-art-site-backup.zip . -x ".git/*"
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiagosillos-art-site-backup
+          path: tiagosillos-art-site-backup.zip
+          retention-days: 1
