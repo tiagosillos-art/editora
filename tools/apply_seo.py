@@ -13,6 +13,7 @@ GA_MEASUREMENT_ID='G-EYGB2RVCFD'
 # Links completos gerados no SiteStripe. Mantemos o ASIN canônico nos dados/Schema
 # e usamos estes URLs somente nos botões de saída para a Amazon.
 AFFILIATE_LINKS={
+    'B0GQNCFMJR':'https://www.amazon.com.br/dp/B0GQNCFMJR?tag=tiagosillosar-20',
     'B0H6NB1D9B':'https://www.amazon.com.br/dp/B0H6NB1D9B?linkCode=ll2&tag=tiagosillosar-20&linkId=9143c167a60d28962fb8a212d07a040e',
     'B0H6LMVSMB':'https://www.amazon.com.br/dp/B0H6LMVSMB?linkCode=ll2&tag=tiagosillosar-20&linkId=23d27c39c6273eb06f964693698105da',
     'B0H8YSZGMH':'https://www.amazon.com.br/dp/B0H8YSZGMH?linkCode=ll2&tag=tiagosillosar-20&linkId=9d4c908e278df8b6d9001855141fedd8',

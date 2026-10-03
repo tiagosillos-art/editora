@@ -1,9 +1,4 @@
-const extras=[
-{slug:'o-caibalion',title:'O Caibalion',author:'Os Três Iniciados',category:'filosofia',cover:'/assets/capas/o-caibalion.jpg'},
-{slug:'fundamentacao-da-metafisica-dos-costumes',title:'Fundamentação da Metafísica dos Costumes',author:'Immanuel Kant',category:'filosofia',cover:'/assets/capas/fundamentacao-da-metafisica-dos-costumes.jpg'},
-{slug:'bauhausbucher',title:'Bauhausbücher: os 14 livros da Bauhaus',author:'Tiago Sillos Padovani',category:'arte',cover:'/assets/capas/bauhausbucher.jpg'},
-{slug:'kandinsky-para-impacientes',title:'Kandinsky para Impacientes',author:'Tiago Sillos Padovani',category:'arte',cover:'/assets/capas/kandinsky-para-impacientes.jpg'}
-];
+const extras=[];
 const grid=document.querySelector('.cover-grid');
 if(grid){extras.forEach(b=>{if(document.querySelector(`a[href="/livros/${b.slug}/"]`))return;const a=document.createElement('a');a.className='book-card';a.dataset.category=b.category;a.href=`/livros/${b.slug}/`;const cover=`<div class="cover-wrap"><img alt="Capa de ${b.title}" loading="lazy" src="${b.cover}"/></div>`;a.innerHTML=`${cover}<div class="meta"><div class="tagline">${b.slug==='kandinsky-para-impacientes'?'E-books para Impacientes':(b.category==='arte'?'Arte e estética':'Filosofia')}</div><h3>${b.title}</h3><div class="author">${b.author}</div></div>`;grid.appendChild(a);});}
 document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const f=btn.dataset.filter;document.querySelectorAll('[data-category]').forEach(card=>{card.style.display=(f==='todos'||card.dataset.category===f)?'flex':'none'});}));
