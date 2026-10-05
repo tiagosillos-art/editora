@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bubble Fluid v1</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div id="hint">Bubble Fluid v1</div>
+<canvas id="webgl"></canvas>
+<aside id="panel">
+  <h1>Bubble Fluid v1</h1>
+  <label>Força <input id="fluidForce" type="range" min="0" max="4" step="0.01" value="1.35"></label>
+  <label>Raio <input id="fluidRadius" type="range" min="0.02" max="0.35" step="0.005" value="0.12"></label>
+  <label>Curl <input id="fluidCurl" type="range" min="0" max="6" step="0.05" value="2"></label>
+  <label>Dissipação <input id="fluidDissipation" type="range" min="0.90" max="0.999" step="0.001" value="0.986"></label>
+  <label>Atrito <input id="friction" type="range" min="0" max="0.08" step="0.001" value="0.008"></label>
+  <label>Restituição <input id="restitution" type="range" min="0" max="0.8" step="0.01" value="0.28"></label>
+  <label>Partículas <input id="particleScale" type="range" min="1" max="14" step="0.1" value="7"></label>
+</aside>
+<button id="togglePanel">ocultar painel</button>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
