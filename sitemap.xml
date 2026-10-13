@@ -13,11 +13,19 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tiagosillos.art.br/experimentos/bubble-fluid-v1/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tiagosillos.art.br/</loc>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://tiagosillos.art.br/livros/a-chave-para-a-teosofia/</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://tiagosillos.art.br/livros/a-nova-plastica-na-pintura/</loc>
     <priority>0.9</priority>
   </url>
   <url>
@@ -66,10 +74,6 @@
   </url>
   <url>
     <loc>https://tiagosillos.art.br/livros/o-neoplasticismo/</loc>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://tiagosillos.art.br/livros/a-nova-plastica-na-pintura/</loc>
     <priority>0.9</priority>
   </url>
   <url>
