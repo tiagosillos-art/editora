@@ -15,6 +15,7 @@ GA_MEASUREMENT_ID='G-EYGB2RVCFD'
 AFFILIATE_LINKS={
     'B0GQNCFMJR':'https://www.amazon.com.br/dp/B0GQNCFMJR?tag=tiagosillosar-20',
     'B0H6NB1D9B':'https://www.amazon.com.br/dp/B0H6NB1D9B?linkCode=ll2&tag=tiagosillosar-20&linkId=9143c167a60d28962fb8a212d07a040e',
+    'B0HMWKVPLF':'https://www.amazon.com.br/dp/B0HMWKVPLF?tag=tiagosillosar-20',
     'B0H6LMVSMB':'https://www.amazon.com.br/dp/B0H6LMVSMB?linkCode=ll2&tag=tiagosillosar-20&linkId=23d27c39c6273eb06f964693698105da',
     'B0H8YSZGMH':'https://www.amazon.com.br/dp/B0H8YSZGMH?linkCode=ll2&tag=tiagosillosar-20&linkId=9d4c908e278df8b6d9001855141fedd8',
     'B0HFBDLJBY':'https://www.amazon.com.br/dp/B0HFBDLJBY?linkCode=ll2&tag=tiagosillosar-20&linkId=80709d785033dff84aacc8c0aee63bbd',
