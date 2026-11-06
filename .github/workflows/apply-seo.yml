@@ -3,11 +3,13 @@ on:
   push:
     branches: [main]
     paths:
-      - tools/apply_seo.py
+      - tools/**
+      - tests/**
       - .github/workflows/apply-seo.yml
       - data/livros.json
-      - livros/**
-      - catalogo/index.html
+      - '**/*.html'
+      - sitemap.xml
+      - robots.txt
 permissions:
   contents: write
 jobs:
@@ -20,6 +22,7 @@ jobs:
           python-version: '3.12'
       - run: pip install beautifulsoup4
       - run: python tools/apply_seo.py
+      - run: python -m unittest discover -s tests
       - name: Commit SEO changes
         run: |
           git config user.name "github-actions[bot]"

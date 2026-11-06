@@ -1,8 +1,8 @@
 from pathlib import Path
 from bs4 import BeautifulSoup
-import json, re, html, shutil
+import json, re, html
 
-ROOT=Path('.')
+ROOT=Path(__file__).resolve().parent.parent
 BASE='https://tiagosillos.art.br'
 INSTAGRAM='https://www.instagram.com/tiagosillos.art/'
 SITE='Tiago Sillos Art'
@@ -59,6 +59,42 @@ def meta(soup,**a):
     soup.head.append(t)
 
 def link(soup,rel,href): soup.head.append(soup.new_tag('link',rel=rel,href=href))
+
+def excluded_from_index(soup):
+    for tag in soup.find_all('meta'):
+        name=tag.get('name','').lower()
+        directives=re.split(r'[\s,]+',tag.get('content','').lower())
+        if name in {'robots','googlebot'} and {'noindex','none'} & set(directives):
+            return True
+        if tag.get('http-equiv','').lower()=='refresh':
+            return True
+    return False
+
+def complete_catalog(soup):
+    # Os livros devem estar no HTML, inclusive sem executar JavaScript.
+    grid=soup.select_one('.cover-grid')
+    if not grid: return
+    linked={a.get('href') for a in grid.find_all('a',href=True)}
+    categories={'arte':'Arte e estética','filosofia':'Filosofia','literatura':'Literatura','teosofia':'Teosofia'}
+    for book in books:
+        href=f"/livros/{book['slug']}/"
+        if href in linked or not (ROOT/'livros'/book['slug']/'index.html').is_file(): continue
+        card=soup.new_tag('a',href=href)
+        card['class']='book-card'
+        card['data-category']=book['category']
+        cover=soup.new_tag('div',attrs={'class':'cover-wrap'})
+        cover.append(soup.new_tag('img',src=book['cover'],alt='Capa de '+book['title'],loading='lazy'))
+        card.append(cover)
+        info=soup.new_tag('div',attrs={'class':'meta'})
+        category='E-books para Impacientes' if book.get('series')=='E-books para Impacientes' else categories.get(book['category'],book['category'])
+        for tag,cls,value in [('div','tagline',category),('h3',None,book['title']),('div','author',book['author'])]:
+            child=soup.new_tag(tag)
+            if cls: child['class']=cls
+            child.string=value
+            info.append(child)
+        card.append(info)
+        grid.append(card)
+        linked.add(href)
 
 def apply_ga(soup):
     # Remove versões anteriores para manter a instalação idempotente.
@@ -124,17 +160,19 @@ def apply_affiliate_link(soup,book):
 pages=[]
 for p in sorted(ROOT.rglob('index.html')):
     rel=p.relative_to(ROOT)
-    if rel.parts[0] in {'editora','.git','.github'}: continue
+    if rel.parts[0] in {'editora','site_links','.git','.github','tests'}: continue
     text=p.read_text(encoding='utf-8').replace('/editora/','/')
     text=text.replace('<a class="artlink" href="/">Galeria de arte</a>',f'<a class="artlink" href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
     text=text.replace('<a href="/">Galeria</a>',f'<a href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
     soup=BeautifulSoup(text,'html.parser')
     if not soup.head: continue
+    noindex=rel.parts[0]=='experimentos' or excluded_from_index(soup)
     apply_ga(soup)
     for a in list(soup.find_all('a',href=True)):
         if 'play.google.com/store/books' in a.get('href',''):
             a.decompose()
     c=canon(rel); k=kind(rel); title=soup.title.get_text(strip=True) if soup.title else SITE
+    if k=='catalog': complete_catalog(soup)
     d=soup.find('meta',attrs={'name':'description'}); desc=d.get('content','').strip() if d else ''
     if not desc: desc='Editora independente dedicada à arte abstrata, estética e vanguardas modernas.'
     for t in list(soup.find_all('script',attrs={'type':'application/ld+json'})): t.decompose()
@@ -144,7 +182,7 @@ for p in sorted(ROOT.rglob('index.html')):
             if n in {'robots','author','twitter:card','twitter:title','twitter:description','twitter:image'} or prop.startswith('og:'): t.decompose()
         elif 'canonical' in (t.get('rel') or []): t.decompose()
     link(soup,'canonical',c)
-    meta(soup,name='robots',content='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
+    meta(soup,name='robots',content='noindex,follow' if noindex else 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
     meta(soup,name='author',content=EDITOR)
     img=BASE+'/assets/capas/ponto-e-linha-sobre-o-plano.jpg'; book=None
     if k=='book':
@@ -173,7 +211,8 @@ for p in sorted(ROOT.rglob('index.html')):
         if book.get('subjects'): bs['keywords']=book['subjects']
         schema={'@context':'https://schema.org','@graph':[org(),bs,{'@type':'WebPage','@id':c+'#webpage','url':c,'name':title,'description':desc,'mainEntity':{'@id':c+'#book'},'inLanguage':'pt-BR'}]}
     else: schema={'@context':'https://schema.org','@graph':[org(),{'@type':'WebPage','url':c,'name':title,'description':desc,'inLanguage':'pt-BR'}]}
-    jsonld(soup,schema); p.write_text(str(soup),encoding='utf-8'); pages.append(c)
+    jsonld(soup,schema); p.write_text(str(soup),encoding='utf-8')
+    if not noindex: pages.append(c)
 
 pages=list(dict.fromkeys(pages))
 xml=['<?xml version="1.0" encoding="UTF-8"?>','<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -184,9 +223,9 @@ xml.append('</urlset>')
 (ROOT/'sitemap.xml').write_text('\n'.join(xml)+'\n',encoding='utf-8')
 (ROOT/'robots.txt').write_text(f'User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n',encoding='utf-8')
 
-shutil.rmtree(ROOT/'editora',ignore_errors=True); (ROOT/'editora').mkdir()
+(ROOT/'editora').mkdir(exist_ok=True)
 (ROOT/'editora/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
 
-shutil.rmtree(ROOT/'site_links',ignore_errors=True); (ROOT/'site_links').mkdir()
+(ROOT/'site_links').mkdir(exist_ok=True)
 (ROOT/'site_links/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
 print(f'SEO, links de associado e limpeza do Google Play aplicados em {len(pages)} páginas.')
