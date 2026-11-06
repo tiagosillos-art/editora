@@ -19,7 +19,11 @@ class SeoGenerationTests(unittest.TestCase):
     def test_sitemap_and_catalog_remain_consistent_after_regeneration(self):
         with tempfile.TemporaryDirectory(prefix='seo-check-', dir=ROOT.parent) as temp:
             site = Path(temp) / 'site'
-            shutil.copytree(ROOT, site, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+            shutil.copytree(ROOT, site, ignore=shutil.ignore_patterns('.git', '__pycache__', '_arquivo-webgl', 'relatório'))
+            archived = site / '_arquivo-webgl' / 'index.html'
+            archived.parent.mkdir()
+            archived.write_text('<html><head><title>WebGL antigo</title></head><body></body></html>', encoding='utf-8')
+            archived_content = archived.read_bytes()
             # Uma exclusão editorial e um redirecionamento não podem virar indexáveis.
             for slug, directive in [('private', '<meta name="robots" content="noindex,follow">'),
                                     ('redirect', '<meta http-equiv="refresh" content="0;url=/">')]:
@@ -39,10 +43,11 @@ class SeoGenerationTests(unittest.TestCase):
             first = snapshot()
             generate()
             self.assertEqual(first, snapshot(), 'Reaplicar o SEO precisa ser idempotente')
+            self.assertEqual(archived_content, archived.read_bytes(), 'O arquivo WebGL deve permanecer intacto')
 
             urls = [loc.text for loc in ET.parse(site / 'sitemap.xml').findall('.//{*}loc')]
             self.assertEqual(len(urls), len(set(urls)))
-            for prefix in ('/editora/', '/site_links/', '/experimentos/', '/private/', '/redirect/'):
+            for prefix in ('/editora/', '/site_links/', '/experimentos/', '/private/', '/redirect/', '/_arquivo-webgl/'):
                 self.assertFalse(any(urlsplit(url).path.startswith(prefix) for url in urls), prefix)
             self.assertIn(BASE + '/', urls)
             for url in urls:

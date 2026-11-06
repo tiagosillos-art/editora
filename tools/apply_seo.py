@@ -158,9 +158,14 @@ def apply_affiliate_link(soup,book):
     return True
 
 pages=[]
-for p in sorted(ROOT.rglob('index.html')):
+# Percorre apenas as pastas ativas, sem entrar no arquivo do site antigo.
+excluded_dirs={'editora','site_links','tests','_arquivo-webgl','relatório'}
+page_files=[ROOT/'index.html']
+for directory in sorted(ROOT.iterdir()):
+    if directory.is_dir() and not directory.name.startswith('.') and directory.name not in excluded_dirs:
+        page_files.extend(sorted(directory.rglob('index.html')))
+for p in sorted(page_files):
     rel=p.relative_to(ROOT)
-    if rel.parts[0] in {'editora','site_links','.git','.github','tests'}: continue
     text=p.read_text(encoding='utf-8').replace('/editora/','/')
     text=text.replace('<a class="artlink" href="/">Galeria de arte</a>',f'<a class="artlink" href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
     text=text.replace('<a href="/">Galeria</a>',f'<a href="{INSTAGRAM}" target="_blank" rel="noopener noreferrer">Instagram</a>')
