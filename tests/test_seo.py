@@ -74,6 +74,21 @@ class SeoGenerationTests(unittest.TestCase):
 
             books = json.loads((site / 'data/livros.json').read_text(encoding='utf-8'))
             self.assertEqual(len(books), len({book['slug'] for book in books}))
+            collection_url = '/colecoes/biblioteca-franciscana/'
+            self.assertIn(BASE + collection_url, urls)
+            home = BeautifulSoup((site / 'index.html').read_text(encoding='utf-8'), 'html.parser')
+            self.assertIsNotNone(home.select_one(f'.hero a[href="{collection_url}"]'))
+            self.assertIsNotNone(catalog.select_one(f'a[href="{collection_url}"]'))
+            collection = BeautifulSoup((site / collection_url.lstrip('/') / 'index.html').read_text(encoding='utf-8'), 'html.parser')
+            groups = collection.select('.cover-grid[data-series]')
+            self.assertEqual([grid.find_parent('section')['id'] for grid in groups], ['fontes', 'sabatier', 'thode'])
+            for grid in groups:
+                entries = sorted((book for book in books if book.get('series') == grid['data-series']),
+                                 key=lambda book: book.get('volume') or 0)
+                self.assertTrue(entries, grid['data-series'])
+                self.assertEqual([card['href'] for card in grid.select('.book-card')],
+                                 [f"/livros/{book['slug']}/" for book in entries])
+
             print_cards = {card['href'] for card in catalog.select('.book-card[data-impresso]')}
             self.assertEqual(print_cards, {f"/livros/{book['slug']}/" for book in books if book.get('print_br')})
             for book in books:

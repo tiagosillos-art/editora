@@ -69,9 +69,9 @@ def excluded_from_index(soup):
             return True
     return False
 
-def complete_catalog(soup,entries):
+def complete_catalog(soup,entries,grid=None):
     # Os livros devem estar no HTML, inclusive sem executar JavaScript.
-    grid=soup.select_one('.cover-grid')
+    if grid is None: grid=soup.select_one('.cover-grid')
     if not grid: return
     cards={a['href']:a for a in grid.select('a.book-card[href]')}
     categories={'arte':'Arte e estética','filosofia':'Filosofia','literatura':'Literatura','teosofia':'Teosofia','psicologia':'Psicologia','sonhos':'Sonhos','ciencia':'Ciência e tecnologia'}
@@ -86,7 +86,13 @@ def complete_catalog(soup,entries):
             card.append(cover)
             info=soup.new_tag('div',attrs={'class':'meta'})
             category='E-books para Impacientes' if book.get('series')=='E-books para Impacientes' else categories.get(book['category'],book['category'])
-            for tag,cls,value in [('div','tagline',category),('h3',None,book['title']),('div','author',book['author'])]:
+            title=book['title']
+            if grid.has_attr('data-series'):
+                volume=book.get('volume')
+                category=f'Volume {volume}' if volume else ''
+                title=(book.get('subtitle') or title) if volume else title
+            for tag,cls,value in [('div','tagline',category),('h3',None,title),('div','author',book['author'])]:
+                if not value: continue
                 child=soup.new_tag(tag)
                 if cls: child['class']=cls
                 child.string=value
@@ -209,6 +215,11 @@ for p in sorted(page_files):
         complete_catalog(soup,books)
     if rel.as_posix()=='colecoes/biblioteca-arte-estetica-moderna/index.html':
         complete_catalog(soup,(b for b in books if b.get('series')=='Biblioteca de Arte e Estética Moderna'))
+    if k=='collection':
+        for grid in soup.select('.cover-grid[data-series]'):
+            entries=[b for b in books if b.get('series')==grid['data-series']]
+            grid.clear()
+            complete_catalog(soup,sorted(entries,key=lambda b: b.get('volume') or 0),grid)
     d=soup.find('meta',attrs={'name':'description'}); desc=d.get('content','').strip() if d else ''
     if not desc: desc='Editora independente dedicada à arte abstrata, estética e vanguardas modernas.'
     for t in list(soup.find_all('script',attrs={'type':'application/ld+json'})): t.decompose()
@@ -221,11 +232,16 @@ for p in sorted(page_files):
     meta(soup,name='robots',content='noindex,follow' if noindex else 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
     meta(soup,name='author',content=EDITOR)
     img=BASE+'/assets/capas/ponto-e-linha-sobre-o-plano.jpg'
+    img_alt=SITE
+    if k=='collection' and (cover:=soup.select_one('img.collection-hero-cover')):
+        img=BASE+cover['src']
+        img_alt=cover['alt']
     if book:
         img=BASE+'/'+book['cover'].lstrip('/')
+        img_alt='Capa de '+book['title']
         apply_affiliate_link(soup,book)
         apply_print_edition(soup,book)
-    for prop,val in [('og:locale','pt_BR'),('og:site_name',SITE),('og:type','book' if k=='book' else 'website'),('og:title',title),('og:description',desc),('og:url',c),('og:image',img),('og:image:alt',('Capa de '+book['title']) if book else SITE)]: meta(soup,property=prop,content=val)
+    for prop,val in [('og:locale','pt_BR'),('og:site_name',SITE),('og:type','book' if k=='book' else 'website'),('og:title',title),('og:description',desc),('og:url',c),('og:image',img),('og:image:alt',img_alt)]: meta(soup,property=prop,content=val)
     for name,val in [('twitter:card','summary_large_image'),('twitter:title',title),('twitter:description',desc),('twitter:image',img)]: meta(soup,name=name,content=val)
     if k=='home':
         schema={'@context':'https://schema.org','@graph':[org(),{'@type':'WebSite','@id':BASE+'/#website','url':BASE+'/','name':SITE,'inLanguage':'pt-BR','publisher':{'@id':BASE+'/#organization'}},{'@type':'WebPage','@id':c+'#webpage','url':c,'name':title,'description':desc,'isPartOf':{'@id':BASE+'/#website'},'about':{'@id':BASE+'/#organization'},'inLanguage':'pt-BR'}]}

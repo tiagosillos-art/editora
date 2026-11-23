@@ -28,3 +28,14 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--soft);fo
 .catalog-result-count{margin:-12px 0 24px;color:var(--soft)}
 .catalog-result-count:empty{display:none}
 @media(max-width:620px){.theme-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.theme-links a{height:100%}}
+.collection-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);align-items:center;gap:clamp(24px,6vw,80px)}
+.collection-entry .section-head{display:block;margin:0}
+.collection-entry .cover-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,24px)}
+.collection-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);align-items:center;gap:clamp(24px,7vw,90px)}
+.collection-intro h1{line-height:1}
+.collection-hero-cover{width:100%;border:1px solid var(--line);box-shadow:0 16px 32px rgba(0,0,0,.14)}
+.collection-section{scroll-margin-top:74px}
+.collection-section .cover-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))}
+.catalog-collection-link{margin-top:22px}
+@media(max-width:740px){.collection-entry,.collection-intro{grid-template-columns:1fr}.collection-hero-cover{max-width:160px}.collection-section .cover-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.collection-entry .book-card h3{font-size:1rem}}
