@@ -36,7 +36,6 @@ by_slug={b['slug']:b for b in books}
 
 for b in books:
     if b.get('cover'): b['cover']='/'+b['cover'].replace('/editora/','/').lstrip('/')
-    b['play']=''
 (ROOT/'data/livros.json').write_text(json.dumps(books,ensure_ascii=False,indent=2),encoding='utf-8')
 
 def canon(rel):
@@ -51,7 +50,7 @@ def kind(rel):
     return 'page'
 
 def authors(s):
-    return [x.strip() for x in re.split(r'\s*&\s*|\s+e\s+',s) if x.strip()]
+    return [x.strip() for x in re.split(r'\s*[&;]\s*|\s+e\s+',s) if x.strip()]
 
 def meta(soup,**a):
     t=soup.new_tag('meta')
@@ -70,31 +69,38 @@ def excluded_from_index(soup):
             return True
     return False
 
-def complete_catalog(soup):
+def complete_catalog(soup,entries):
     # Os livros devem estar no HTML, inclusive sem executar JavaScript.
     grid=soup.select_one('.cover-grid')
     if not grid: return
-    linked={a.get('href') for a in grid.find_all('a',href=True)}
-    categories={'arte':'Arte e estética','filosofia':'Filosofia','literatura':'Literatura','teosofia':'Teosofia'}
-    for book in books:
+    cards={a['href']:a for a in grid.select('a.book-card[href]')}
+    categories={'arte':'Arte e estética','filosofia':'Filosofia','literatura':'Literatura','teosofia':'Teosofia','psicologia':'Psicologia','sonhos':'Sonhos','ciencia':'Ciência e tecnologia'}
+    for book in entries:
         href=f"/livros/{book['slug']}/"
-        if href in linked or not (ROOT/'livros'/book['slug']/'index.html').is_file(): continue
-        card=soup.new_tag('a',href=href)
-        card['class']='book-card'
-        card['data-category']=book['category']
-        cover=soup.new_tag('div',attrs={'class':'cover-wrap'})
-        cover.append(soup.new_tag('img',src=book['cover'],alt='Capa de '+book['title'],loading='lazy'))
-        card.append(cover)
-        info=soup.new_tag('div',attrs={'class':'meta'})
-        category='E-books para Impacientes' if book.get('series')=='E-books para Impacientes' else categories.get(book['category'],book['category'])
-        for tag,cls,value in [('div','tagline',category),('h3',None,book['title']),('div','author',book['author'])]:
-            child=soup.new_tag(tag)
-            if cls: child['class']=cls
-            child.string=value
-            info.append(child)
-        card.append(info)
-        grid.append(card)
-        linked.add(href)
+        if not (ROOT/'livros'/book['slug']/'index.html').is_file(): continue
+        card=cards.get(href)
+        if card is None:
+            card=soup.new_tag('a',href=href,attrs={'class':'book-card','data-category':book['category']})
+            cover=soup.new_tag('div',attrs={'class':'cover-wrap'})
+            cover.append(soup.new_tag('img',src=book['cover'],alt='Capa de '+book['title'],loading='lazy'))
+            card.append(cover)
+            info=soup.new_tag('div',attrs={'class':'meta'})
+            category='E-books para Impacientes' if book.get('series')=='E-books para Impacientes' else categories.get(book['category'],book['category'])
+            for tag,cls,value in [('div','tagline',category),('h3',None,book['title']),('div','author',book['author'])]:
+                child=soup.new_tag(tag)
+                if cls: child['class']=cls
+                child.string=value
+                info.append(child)
+            card.append(info)
+            grid.append(card)
+        print_label=card.select_one('.print-label')
+        if print_label: print_label.decompose()
+        card.attrs.pop('data-impresso',None)
+        if book.get('print_br'):
+            card['data-impresso']='true'
+            label=soup.new_tag('div',attrs={'class':'print-label'})
+            label.string='Impresso no Brasil'
+            card.select_one('.meta').append(label)
 
 def apply_ga(soup):
     # Remove versões anteriores para manter a instalação idempotente.
@@ -138,10 +144,12 @@ def asin_from_book(book):
 
 def apply_affiliate_link(soup,book):
     asin=asin_from_book(book)
-    url=AFFILIATE_LINKS.get(asin)
-    if not url: return False
     btn=soup.select_one('a.btn.amazon')
-    if not btn: return False
+    if not asin or not btn: return False
+    url=AFFILIATE_LINKS.get(asin)
+    if not url:
+        current=btn.get('href','')
+        url=current if f'/dp/{asin}?' in current and f'tag={ASSOCIATE_TAG}' in current else f'https://www.amazon.com.br/dp/{asin}?tag={ASSOCIATE_TAG}'
     btn['href']=url
     btn['rel']='sponsored noopener'
     btn['target']='_blank'
@@ -156,6 +164,24 @@ def apply_affiliate_link(soup,book):
             p.append(small)
             stores.insert_after(p)
     return True
+
+def apply_print_edition(soup,book):
+    stores=soup.select_one('.stores')
+    if not stores: return
+    existing=soup.select_one('.print-edition')
+    if existing: existing.decompose()
+    edition=book.get('print_br')
+    if not edition: return
+    section=soup.new_tag('section',attrs={'class':'print-edition','aria-labelledby':'edicao-impressa'})
+    heading=soup.new_tag('h2',id='edicao-impressa')
+    heading.string='Edição impressa no Brasil'
+    details=soup.new_tag('p')
+    details.string=f"{edition['binding']} · {edition['size']} · {edition['pages']} páginas"
+    button=soup.new_tag('a',href=edition['url'],target='_blank',rel='noopener noreferrer',attrs={'class':'btn'})
+    button.string=f"Comprar na {edition['store']}" if edition['store']=='UICLAP' else f"Comprar no {edition['store']}"
+    section.extend([heading,details,button])
+    anchor=soup.select_one('.amazon-associate-disclosure') or stores
+    anchor.insert_after(section)
 
 pages=[]
 # Percorre apenas as pastas ativas, sem entrar no arquivo do site antigo.
@@ -173,11 +199,16 @@ for p in sorted(page_files):
     if not soup.head: continue
     noindex=rel.parts[0]=='experimentos' or excluded_from_index(soup)
     apply_ga(soup)
-    for a in list(soup.find_all('a',href=True)):
-        if 'play.google.com/store/books' in a.get('href',''):
-            a.decompose()
     c=canon(rel); k=kind(rel); title=soup.title.get_text(strip=True) if soup.title else SITE
-    if k=='catalog': complete_catalog(soup)
+    book=by_slug.get(rel.parts[1]) if k=='book' else None
+    play_url=(book or {}).get('play')
+    for a in list(soup.find_all('a',href=True)):
+        if 'play.google.com/store/books' in a['href'] and a['href']!=play_url:
+            a.decompose()
+    if k=='catalog':
+        complete_catalog(soup,books)
+    if rel.as_posix()=='colecoes/biblioteca-arte-estetica-moderna/index.html':
+        complete_catalog(soup,(b for b in books if b.get('series')=='Biblioteca de Arte e Estética Moderna'))
     d=soup.find('meta',attrs={'name':'description'}); desc=d.get('content','').strip() if d else ''
     if not desc: desc='Editora independente dedicada à arte abstrata, estética e vanguardas modernas.'
     for t in list(soup.find_all('script',attrs={'type':'application/ld+json'})): t.decompose()
@@ -189,10 +220,11 @@ for p in sorted(page_files):
     link(soup,'canonical',c)
     meta(soup,name='robots',content='noindex,follow' if noindex else 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1')
     meta(soup,name='author',content=EDITOR)
-    img=BASE+'/assets/capas/ponto-e-linha-sobre-o-plano.jpg'; book=None
-    if k=='book':
-        book=by_slug.get(rel.parts[1]); img=BASE+'/'+book['cover'].lstrip('/') if book else img
-        if book: apply_affiliate_link(soup,book)
+    img=BASE+'/assets/capas/ponto-e-linha-sobre-o-plano.jpg'
+    if book:
+        img=BASE+'/'+book['cover'].lstrip('/')
+        apply_affiliate_link(soup,book)
+        apply_print_edition(soup,book)
     for prop,val in [('og:locale','pt_BR'),('og:site_name',SITE),('og:type','book' if k=='book' else 'website'),('og:title',title),('og:description',desc),('og:url',c),('og:image',img),('og:image:alt',('Capa de '+book['title']) if book else SITE)]: meta(soup,property=prop,content=val)
     for name,val in [('twitter:card','summary_large_image'),('twitter:title',title),('twitter:description',desc),('twitter:image',img)]: meta(soup,name=name,content=val)
     if k=='home':
@@ -207,11 +239,15 @@ for p in sorted(page_files):
         schema={'@context':'https://schema.org','@graph':[org(),{'@type':'CollectionPage','@id':c+'#webpage','url':c,'name':title,'description':desc,'inLanguage':'pt-BR','mainEntity':{'@type':'ItemList','itemListElement':[{'@type':'ListItem','position':i+1,'url':BASE+h} for i,h in enumerate(seen)]}}]}
     elif k=='book' and book:
         aa=[{'@type':'Person','name':x} for x in authors(book['author'])]
-        bs={'@type':'Book','@id':c+'#book','name':book['title'],'url':c,'image':img,'author':aa if len(aa)>1 else aa[0],'translator':{'@type':'Person','name':EDITOR},'publisher':{'@id':BASE+'/#organization'},'inLanguage':'pt-BR'}
+        bs={'@type':'Book','@id':c+'#book','name':book['title'],'url':c,'image':img,'author':aa if len(aa)>1 else aa[0],'publisher':{'@id':BASE+'/#organization'},'inLanguage':'pt-BR'}
+        if book['author']!=EDITOR:
+            bs['translator']={'@type':'Person','name':EDITOR}
         if book.get('subtitle'): bs['alternativeHeadline']=book['subtitle']
         if str(book.get('pages','')).isdigit(): bs['numberOfPages']=int(book['pages'])
-        same=[u for u in [book.get('amazon')] if u]
+        same=[u for u in [book.get('amazon'),book.get('play')] if u]
         if same: bs['sameAs']=same
+        if edition:=book.get('print_br'):
+            bs['workExample']={'@type':'Book','bookFormat':'https://schema.org/Paperback','url':edition['url'],'numberOfPages':edition['pages'],'inLanguage':'pt-BR'}
         if book.get('series'): bs['isPartOf']={'@type':'BookSeries','name':book['series']}
         if book.get('subjects'): bs['keywords']=book['subjects']
         schema={'@context':'https://schema.org','@graph':[org(),bs,{'@type':'WebPage','@id':c+'#webpage','url':c,'name':title,'description':desc,'mainEntity':{'@id':c+'#book'},'inLanguage':'pt-BR'}]}
@@ -233,4 +269,4 @@ xml.append('</urlset>')
 
 (ROOT/'site_links').mkdir(exist_ok=True)
 (ROOT/'site_links/index.html').write_text('<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><link rel="canonical" href="https://tiagosillos.art.br/"><meta http-equiv="refresh" content="0;url=/"><title>Tiago Sillos Art</title><script>location.replace(\'/\');</script></head><body><p><a href="/">Ir para Tiago Sillos Art</a></p></body></html>',encoding='utf-8')
-print(f'SEO, links de associado e limpeza do Google Play aplicados em {len(pages)} páginas.')
+print(f'SEO e links de compra aplicados em {len(pages)} páginas.')

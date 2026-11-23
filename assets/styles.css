@@ -13,3 +13,8 @@ header{position:sticky;top:0;z-index:40;background:rgba(243,239,230,.94);backdro
 footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--soft);font-size:.9rem}.footer-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}.footer-links{display:flex;gap:16px;flex-wrap:wrap}.footer-links a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:900px){.hero-grid,.book-layout,.about-grid{grid-template-columns:1fr}.hero-art{min-height:400px}.cover-grid{grid-template-columns:repeat(3,1fr)}.principles{grid-template-columns:1fr}.book-cover{position:static;max-width:300px}.navlinks{display:none}}
 @media(max-width:620px){.wrap{width:min(100% - 26px,var(--max))}.hero{padding-top:45px}h1{font-size:3.25rem}.cover-grid{grid-template-columns:repeat(2,1fr);gap:24px 14px}.hero-art{min-height:320px}.hero-cover{width:135px}.section{padding:54px 0}.section-head{display:block}.artlink{margin-left:auto}.nav{gap:12px}.brand{font-size:1rem}}
+.book-card[hidden]{display:none}
+.print-label{margin-top:8px;color:var(--blue);font-size:.9rem;font-weight:700}
+.print-edition{margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+.print-edition h2{margin:0;font-family:Georgia,'Times New Roman',serif;font-size:1.5rem;line-height:1.2}
+.print-edition p{margin:8px 0 14px;color:var(--soft)}

@@ -1,5 +1,6 @@
 from pathlib import Path
 import hashlib
+import json
 import shutil
 import subprocess
 import sys
@@ -17,9 +18,9 @@ BASE = 'https://tiagosillos.art.br'
 
 class SeoGenerationTests(unittest.TestCase):
     def test_sitemap_and_catalog_remain_consistent_after_regeneration(self):
-        with tempfile.TemporaryDirectory(prefix='seo-check-', dir=ROOT.parent) as temp:
+        with tempfile.TemporaryDirectory(prefix='seo-check-') as temp:
             site = Path(temp) / 'site'
-            shutil.copytree(ROOT, site, ignore=shutil.ignore_patterns('.git', '__pycache__', '_arquivo-webgl', 'relatório'))
+            shutil.copytree(ROOT, site, ignore=shutil.ignore_patterns('.git', '__pycache__', '_arquivo-webgl', 'relatório', '.catalogo-deps'))
             archived = site / '_arquivo-webgl' / 'index.html'
             archived.parent.mkdir()
             archived.write_text('<html><head><title>WebGL antigo</title></head><body></body></html>', encoding='utf-8')
@@ -70,6 +71,22 @@ class SeoGenerationTests(unittest.TestCase):
                 url = f'/livros/{page.parent.name}/'
                 self.assertIn(url, cards, 'Livro sem link no catálogo: ' + url)
                 self.assertIn(BASE + url, urls)
+
+            books = json.loads((site / 'data/livros.json').read_text(encoding='utf-8'))
+            self.assertEqual(len(books), len({book['slug'] for book in books}))
+            print_cards = {card['href'] for card in catalog.select('.book-card[data-impresso]')}
+            self.assertEqual(print_cards, {f"/livros/{book['slug']}/" for book in books if book.get('print_br')})
+            for book in books:
+                path = site / 'livros' / book['slug'] / 'index.html'
+                if not path.is_file():
+                    continue
+                self.assertTrue((site / book['cover'].lstrip('/')).is_file(), book['slug'])
+                page = BeautifulSoup(path.read_text(encoding='utf-8'), 'html.parser')
+                if edition := book.get('print_br'):
+                    self.assertEqual([link['href'] for link in page.select('.print-edition a')], [edition['url']])
+                if play := book.get('play'):
+                    self.assertEqual([link['href'] for link in page.select('.stores .play')], [play])
+                    self.assertIsNone(page.select_one('.stores .amazon'))
 
 
 if __name__ == '__main__':
