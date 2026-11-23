@@ -18,3 +18,13 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--soft);fo
 .print-edition{margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
 .print-edition h2{margin:0;font-family:Georgia,'Times New Roman',serif;font-size:1.5rem;line-height:1.2}
 .print-edition p{margin:8px 0 14px;color:var(--soft)}
+.hero h1{max-width:13ch}
+.theme-nav{margin-top:30px}
+.theme-nav h2{margin:0 0 10px;font-size:1rem}
+.theme-links{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.theme-links a{display:flex;align-items:center;min-height:44px;padding:7px 12px;border:1px solid var(--line);background:var(--white);font-size:.95rem;font-weight:700}
+.theme-links a:hover,.theme-links a:focus-visible{border-color:var(--blue);color:var(--blue)}
+.catalog-tools{scroll-margin-top:90px}
+.catalog-result-count{margin:-12px 0 24px;color:var(--soft)}
+.catalog-result-count:empty{display:none}
+@media(max-width:620px){.theme-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.theme-links a{height:100%}}
