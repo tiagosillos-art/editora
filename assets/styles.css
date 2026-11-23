@@ -33,7 +33,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--soft);fo
 .collection-entry .cover-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,24px)}
 .collection-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);align-items:center;gap:clamp(24px,7vw,90px)}
 .collection-intro h1{line-height:1}
-.collection-hero-cover{width:100%;border:1px solid var(--line);box-shadow:0 16px 32px rgba(0,0,0,.14)}
+.collection-hero-cover{width:100%;height:auto;border:1px solid var(--line);box-shadow:0 16px 32px rgba(0,0,0,.14)}
 .collection-section{scroll-margin-top:74px}
 .collection-section .cover-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))}
 .catalog-collection-link{margin-top:22px}
