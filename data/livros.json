@@ -852,7 +852,10 @@
     "category": "literatura",
     "series": "Biblioteca Franciscana",
     "volume": null,
-    "cover": "/assets/capas/legenda-maior-com-os-28-afrescos-de-giotto.jpg"
+    "cover": "/assets/capas/legenda-maior-com-os-28-afrescos-de-giotto.jpg",
+    "secondary_categories": [
+      "arte"
+    ]
   },
   {
     "title": "Espelho da Perfeição",
@@ -914,7 +917,7 @@
     "amazon": "",
     "play": "https://play.google.com/store/books/details?id=eAcsEgAAQBAJ",
     "subtitle": "Francisco de Assis e as suas imagens",
-    "category": "literatura",
+    "category": "arte",
     "series": "Francisco de Assis e a Arte do Renascimento (Henry Thode)",
     "volume": 1,
     "cover": "/assets/capas/francisco-de-assis-e-os-comecos-da-arte-do-renascimento-na-italia-vol-1.jpg"
@@ -927,7 +930,7 @@
     "amazon": "",
     "play": "https://play.google.com/store/books/details?id=fAcsEgAAQBAJ",
     "subtitle": "A igreja de S. Francesco em Assis",
-    "category": "literatura",
+    "category": "arte",
     "series": "Francisco de Assis e a Arte do Renascimento (Henry Thode)",
     "volume": 2,
     "cover": "/assets/capas/francisco-de-assis-e-os-comecos-da-arte-do-renascimento-na-italia-vol-2.jpg"
@@ -940,7 +943,7 @@
     "amazon": "",
     "play": "https://play.google.com/store/books/details?id=iAcsEgAAQBAJ",
     "subtitle": "As igrejas franciscanas na Itália",
-    "category": "literatura",
+    "category": "arte",
     "series": "Francisco de Assis e a Arte do Renascimento (Henry Thode)",
     "volume": 3,
     "cover": "/assets/capas/francisco-de-assis-e-os-comecos-da-arte-do-renascimento-na-italia-vol-3.jpg"
@@ -953,7 +956,7 @@
     "amazon": "",
     "play": "https://play.google.com/store/books/details?id=jAcsEgAAQBAJ",
     "subtitle": "O franciscanismo e a arte",
-    "category": "literatura",
+    "category": "arte",
     "series": "Francisco de Assis e a Arte do Renascimento (Henry Thode)",
     "volume": 4,
     "cover": "/assets/capas/francisco-de-assis-e-os-comecos-da-arte-do-renascimento-na-italia-vol-4.jpg"
@@ -966,7 +969,7 @@
     "amazon": "",
     "play": "https://play.google.com/store/books/details?id=tDMsEgAAQBAJ",
     "subtitle": "As alegorias e a conclusão",
-    "category": "literatura",
+    "category": "arte",
     "series": "Francisco de Assis e a Arte do Renascimento (Henry Thode)",
     "volume": 5,
     "cover": "/assets/capas/francisco-de-assis-e-os-comecos-da-arte-do-renascimento-na-italia-vol-5.jpg"

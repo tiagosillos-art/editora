@@ -11,7 +11,7 @@ function filterCatalog(selected) {
   });
   let visible = 0;
   catalog.querySelectorAll('.book-card').forEach(card => {
-    const matches = filter === 'todos' || card.dataset.category === filter ||
+    const matches = filter === 'todos' || (card.dataset.category || '').split(' ').includes(filter) ||
       (filter === 'impresso' && card.hasAttribute('data-impresso'));
     card.hidden = !matches;
     if (matches) visible += 1;

@@ -69,6 +69,9 @@ def excluded_from_index(soup):
             return True
     return False
 
+def book_categories(book):
+    return [book['category'], *book.get('secondary_categories',[])]
+
 def complete_catalog(soup,entries,grid=None):
     # Os livros devem estar no HTML, inclusive sem executar JavaScript.
     if grid is None: grid=soup.select_one('.cover-grid')
@@ -78,20 +81,23 @@ def complete_catalog(soup,entries,grid=None):
     for book in entries:
         href=f"/livros/{book['slug']}/"
         if not (ROOT/'livros'/book['slug']/'index.html').is_file(): continue
+        keys=book_categories(book)
+        attribute=' '.join(keys)
+        label=' · '.join(categories.get(key,key) for key in keys)
+        if book.get('series')=='E-books para Impacientes': label='E-books para Impacientes'
         card=cards.get(href)
         if card is None:
-            card=soup.new_tag('a',href=href,attrs={'class':'book-card','data-category':book['category']})
+            card=soup.new_tag('a',href=href,attrs={'class':'book-card','data-category':attribute})
             cover=soup.new_tag('div',attrs={'class':'cover-wrap'})
             cover.append(soup.new_tag('img',src=book['cover'],alt='Capa de '+book['title'],loading='lazy'))
             card.append(cover)
             info=soup.new_tag('div',attrs={'class':'meta'})
-            category='E-books para Impacientes' if book.get('series')=='E-books para Impacientes' else categories.get(book['category'],book['category'])
             title=book['title']
             if grid.has_attr('data-series'):
                 volume=book.get('volume')
-                category=f'Volume {volume}' if volume else ''
+                label=f'Volume {volume}' if volume else ''
                 title=(book.get('subtitle') or title) if volume else title
-            for tag,cls,value in [('div','tagline',category),('h3',None,title),('div','author',book['author'])]:
+            for tag,cls,value in [('div','tagline',label),('h3',None,title),('div','author',book['author'])]:
                 if not value: continue
                 child=soup.new_tag(tag)
                 if cls: child['class']=cls
@@ -99,6 +105,10 @@ def complete_catalog(soup,entries,grid=None):
                 info.append(child)
             card.append(info)
             grid.append(card)
+        elif card.get('data-category')!=attribute:
+            card['data-category']=attribute
+            if tagline:=card.select_one('.tagline'):
+                tagline.string=label
         print_label=card.select_one('.print-label')
         if print_label: print_label.decompose()
         card.attrs.pop('data-impresso',None)
@@ -217,7 +227,9 @@ for p in sorted(page_files):
         complete_catalog(soup,(b for b in books if b.get('series')=='Biblioteca de Arte e Estética Moderna'))
     if k=='collection':
         for grid in soup.select('.cover-grid[data-series]'):
-            entries=[b for b in books if b.get('series')==grid['data-series']]
+            series=grid['data-series'].split('|')
+            theme=grid.get('data-theme')
+            entries=[b for b in books if b.get('series') in series and (theme is None or theme in book_categories(b))]
             grid.clear()
             complete_catalog(soup,sorted(entries,key=lambda b: b.get('volume') or 0),grid)
     d=soup.find('meta',attrs={'name':'description'}); desc=d.get('content','').strip() if d else ''

@@ -89,6 +89,15 @@ class SeoGenerationTests(unittest.TestCase):
                 self.assertEqual([card['href'] for card in grid.select('.book-card')],
                                  [f"/livros/{book['slug']}/" for book in entries])
 
+            legenda = '/livros/legenda-maior-com-os-28-afrescos-de-giotto/'
+            thode = [card['href'] for card in collection.select('#thode .book-card')]
+            art_page = site / 'colecoes/biblioteca-arte-estetica-moderna/index.html'
+            art = BeautifulSoup(art_page.read_text(encoding='utf-8'), 'html.parser')
+            self.assertEqual([card['href'] for card in art.select('#arte-medieval .book-card')], [legenda, *thode])
+            for href in [legenda, *thode]:
+                self.assertIsNotNone(catalog.select_one(f'.book-card[href="{href}"][data-category~="arte"]'))
+            self.assertIsNotNone(catalog.select_one(f'.book-card[href="{legenda}"][data-category~="literatura"]'))
+
             print_cards = {card['href'] for card in catalog.select('.book-card[data-impresso]')}
             self.assertEqual(print_cards, {f"/livros/{book['slug']}/" for book in books if book.get('print_br')})
             for book in books:
