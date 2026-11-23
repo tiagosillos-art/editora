@@ -1012,5 +1012,70 @@
     "series": "Biblioteca Steiner",
     "volume": null,
     "cover": "/assets/capas/a-cronica-do-akasha.jpg"
+  },
+  {
+    "title": "Joana d’Arc",
+    "subtitle": "Vida, processo e morte da Donzela de Orléans",
+    "author": "Jules Michelet",
+    "category": "literatura",
+    "series": "Joana d’Arc",
+    "volume": null,
+    "slug": "joana-darc-jules-michelet",
+    "cover": "/assets/capas/joana-darc-jules-michelet.jpg",
+    "asin": "",
+    "amazon": "",
+    "play": "https://play.google.com/store/books/details?id=TzIwEgAAQBAJ"
+  },
+  {
+    "title": "Processo de Condenação de Joana d’Arc — Volume I",
+    "subtitle": "Ruão, 1431: da abertura do processo ao libelo de acusação",
+    "author": "Pierre Champion",
+    "category": "literatura",
+    "series": "Processo de Condenação de Joana d’Arc",
+    "volume": 1,
+    "slug": "processo-de-condenacao-de-joana-darc-vol-1",
+    "cover": "/assets/capas/processo-de-condenacao-de-joana-darc-vol-1.jpg",
+    "asin": "",
+    "amazon": "",
+    "play": "https://play.google.com/store/books/details?id=zDEwEgAAQBAJ"
+  },
+  {
+    "title": "Processo de Condenação de Joana d’Arc — Volume II",
+    "subtitle": "Ruão, 1431: da Igreja militante à sentença final",
+    "author": "Pierre Champion",
+    "category": "literatura",
+    "series": "Processo de Condenação de Joana d’Arc",
+    "volume": 2,
+    "slug": "processo-de-condenacao-de-joana-darc-vol-2",
+    "cover": "/assets/capas/processo-de-condenacao-de-joana-darc-vol-2.jpg",
+    "asin": "",
+    "amazon": "",
+    "play": "https://play.google.com/store/books/details?id=3jEwEgAAQBAJ"
+  },
+  {
+    "title": "Processo de Reabilitação de Joana d’Arc — Volume I",
+    "subtitle": "Da abertura do processo aos depoimentos dos companheiros de armas",
+    "author": "Joseph Fabre",
+    "category": "literatura",
+    "series": "Processo de Reabilitação de Joana d’Arc",
+    "volume": 1,
+    "slug": "processo-de-reabilitacao-de-joana-darc-vol-1",
+    "cover": "/assets/capas/processo-de-reabilitacao-de-joana-darc-vol-1.jpg",
+    "asin": "",
+    "amazon": "",
+    "play": "https://play.google.com/store/books/details?id=DDIwEgAAQBAJ"
+  },
+  {
+    "title": "Processo de Reabilitação de Joana d’Arc — Volume II",
+    "subtitle": "Ruão: o cativeiro, o processo e a fogueira. A sentença de 1456",
+    "author": "Joseph Fabre",
+    "category": "literatura",
+    "series": "Processo de Reabilitação de Joana d’Arc",
+    "volume": 2,
+    "slug": "processo-de-reabilitacao-de-joana-darc-vol-2",
+    "cover": "/assets/capas/processo-de-reabilitacao-de-joana-darc-vol-2.jpg",
+    "asin": "",
+    "amazon": "",
+    "play": "https://play.google.com/store/books/details?id=GDIwEgAAQBAJ"
   }
 ]
