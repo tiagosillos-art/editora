@@ -104,7 +104,11 @@ class SeoGenerationTests(unittest.TestCase):
                 path = site / 'livros' / book['slug'] / 'index.html'
                 if not path.is_file():
                     continue
-                self.assertTrue((site / book['cover'].lstrip('/')).is_file(), book['slug'])
+                cover = site / book['cover'].lstrip('/')
+                self.assertTrue(cover.is_file(), book['slug'])
+                if cover.suffix.lower() in {'.jpg', '.jpeg'}:
+                    with cover.open('rb') as image:
+                        self.assertEqual(image.read(3), b'\xff\xd8\xff', f'Capa JPEG inválida: {book["slug"]}')
                 page = BeautifulSoup(path.read_text(encoding='utf-8'), 'html.parser')
                 if edition := book.get('print_br'):
                     self.assertEqual([link['href'] for link in page.select('.print-edition a')], [edition['url']])
